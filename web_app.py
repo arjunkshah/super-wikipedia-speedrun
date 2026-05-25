@@ -8,6 +8,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import sys
 from typing import Any
+from urllib.parse import urlparse
 
 from rich.console import Console
 
@@ -31,19 +32,21 @@ class SpeedrunHandler(BaseHTTPRequestHandler):
     server_version = "WikiSpeedrunWeb/0.1"
 
     def do_GET(self) -> None:
-        if self.path in {"/", "/index.html"}:
+        path = urlparse(self.path).path
+        if path in {"/", "/index.html"}:
             self.send_file(STATIC_DIR / "index.html", "text/html; charset=utf-8")
             return
-        if self.path == "/styles.css":
+        if path == "/styles.css":
             self.send_file(STATIC_DIR / "styles.css", "text/css; charset=utf-8")
             return
-        if self.path == "/app.js":
+        if path == "/app.js":
             self.send_file(STATIC_DIR / "app.js", "application/javascript; charset=utf-8")
             return
         self.send_error(HTTPStatus.NOT_FOUND)
 
     def do_POST(self) -> None:
-        if self.path != "/api/solve":
+        path = urlparse(self.path).path
+        if path != "/api/solve":
             self.send_error(HTTPStatus.NOT_FOUND)
             return
 

@@ -48,11 +48,12 @@ function clearResult() {
 }
 
 function renderResult(data) {
+  const stage = data.auto?.stage || data.settings?.mode || "auto";
   metricsEl.hidden = false;
   metricsEl.innerHTML = [
     metric("elapsed", `${formatSeconds(data.elapsed)}s`),
     metric("fetches", data.fetches),
-    metric("mode", data.auto?.stage || "auto"),
+    metric("mode", stage),
   ].join("");
 
   if (!data.found) {
