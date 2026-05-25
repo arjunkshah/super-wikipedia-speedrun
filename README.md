@@ -15,6 +15,7 @@ Repository: <https://github.com/arjunkshah/super-wikipedia-speedrun>
 - BeautifulSoup + `lxml` link extraction
 - Wikipedia REST summary API for compact target understanding
 - MediaWiki search API for target-adjacent bridge hints
+- MediaWiki backlinks for generic target-neighborhood bridge pages
 - Greedy priority search with soft, general heuristics
 - Local browser UI for trying arbitrary article pairs
 - Frozen 30-race benchmark dataset
@@ -76,7 +77,7 @@ For each race it:
 
 1. Fetches the start article links with a lite HTML parse.
 2. Fetches the target article summary through Wikipedia REST.
-3. Uses MediaWiki search to discover target-adjacent bridge pages.
+3. Uses MediaWiki search and backlinks to discover target-adjacent bridge pages.
 4. Scores outgoing links using token overlap, hashed cosine similarity, hub-page
    shape, domain patterns, bridge hits, and trap penalties.
 5. Expands the best links first with a priority queue.

@@ -35,6 +35,7 @@ For a race, the solver uses:
 - Lite HTML fetch for the start/current page links
 - Wikipedia REST summary for compact target text
 - MediaWiki search API for target-adjacent bridge hints
+- MediaWiki backlinks for generic pages that already point at the target
 - In-memory page dedup during the current race only
 
 ## Search Model
@@ -44,6 +45,7 @@ The search is a greedy priority search with a beam. Links are scored using:
 - token overlap with the target
 - hashed cosine similarity against target text
 - bridge hits from Wikipedia search
+- backlink bridge hits from live Wikipedia graph metadata
 - broad hub-page shape
 - media, region, science, and history patterns
 - penalties for narrow traps like songs, games, and parenthetical pages

@@ -397,6 +397,27 @@ class WikiClient:
             target_page.title,
         ]
         bridges: set[str] = set()
+
+        # Pages that already link to the target are extremely strong generic
+        # waypoints: if the current page links to one of them, the next click is
+        # much more likely to enter the target's neighborhood. This is not a
+        # path cache and is not article-specific; it is live graph metadata.
+        try:
+            payload = self._api(
+                action="query",
+                list="backlinks",
+                bltitle=target_page.title,
+                blnamespace=0,
+                bllimit=min(max(limit * 8, 80), 250),
+                blfilterredir="nonredirects",
+            )
+            for hit in payload.get("query", {}).get("backlinks", []):
+                title = hit.get("title", "")
+                if is_valid_article_title(title):
+                    bridges.add(normalize_title(title))
+        except (TimeoutError, RuntimeError):
+            pass
+
         for query in queries:
             query = query.strip()
             if not query:
@@ -573,7 +594,7 @@ def hub_likeness(title: str) -> float:
 def cheap_link_score(link: Link, target_tokens: set[str], bridge_keys: set[str]) -> float:
     link_key = normalize_title(link.title)
     if link_key in bridge_keys:
-        return 4.0
+        return 7.0
     link_tokens = set(TOKEN_RE.findall(link.title.casefold())) - STOPWORDS
     overlap = len(link_tokens & target_tokens)
     return (
@@ -660,7 +681,7 @@ def fast_link_score(
     link_title = normalize_title(link.title)
     exact_bonus = 3.0 if link_title == target_title else 0.0
     contains_bonus = 0.45 if target_title in link_title or link_title in target_title else 0.0
-    bridge_bonus = 0.9 if link_title in bridge_keys else 0.0
+    bridge_bonus = 2.75 if link_title in bridge_keys else 0.0
     list_bonus = 0.55 if link.title.casefold().startswith("list of") else 0.0
     start_overlap = target_token_overlap(link.title, start_tokens) if start_tokens else 0.0
     topic_penalty = same_topic_penalty(link, start_tokens, target_tokens)
@@ -732,7 +753,7 @@ def score_link(
     link_title = normalize_title(link.title)
     exact_bonus = 3.0 if link_title == target_title else 0.0
     contains_bonus = 0.45 if target_title in link_title or link_title in target_title else 0.0
-    bridge_bonus = 0.9 if link_title in bridge_keys else 0.0
+    bridge_bonus = 2.75 if link_title in bridge_keys else 0.0
     category_bonus = 0.0
     if category_text:
         category_bonus = 0.35 * title_similarity(link.title, category_text)
