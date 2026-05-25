@@ -458,7 +458,7 @@ class WikiClient:
 
 AUTO_STAGES: tuple[dict[str, float | int | str], ...] = (
     {"name": "scout", "time_limit": 1.2, "beam": 42, "max_pages": 12, "max_depth": 6},
-    {"name": "wide", "time_limit": 5.0, "beam": 64, "max_pages": 48, "max_depth": 7},
+    {"name": "wide", "time_limit": 5.0, "beam": 72, "max_pages": 72, "max_depth": 8},
     {"name": "deep", "time_limit": 8.0, "beam": 90, "max_pages": 100, "max_depth": 8},
     {"name": "max", "time_limit": 16.0, "beam": 120, "max_pages": 220, "max_depth": 9},
 )

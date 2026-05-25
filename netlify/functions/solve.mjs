@@ -64,7 +64,7 @@ const STOPWORDS = new Set([
 
 const AUTO_STAGES = [
   { name: "scout", timeLimit: 1.2, beam: 42, maxPages: 12, maxDepth: 6 },
-  { name: "wide", timeLimit: 5.0, beam: 64, maxPages: 48, maxDepth: 7 },
+  { name: "wide", timeLimit: 5.0, beam: 72, maxPages: 72, maxDepth: 8 },
   { name: "deep", timeLimit: 8.0, beam: 90, maxPages: 100, maxDepth: 8 },
   { name: "max", timeLimit: 16.0, beam: 120, maxPages: 220, maxDepth: 9 },
 ];
