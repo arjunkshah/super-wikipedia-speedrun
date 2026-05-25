@@ -155,6 +155,34 @@ button:disabled {
   padding: clamp(18px, 4vw, 34px);
 }
 
+.stopwatch {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 18px;
+  margin-bottom: 20px;
+}
+
+.watch-label {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stopwatch strong {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(42px, 6vw, 78px);
+  line-height: 0.9;
+  letter-spacing: 0;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
 .status {
   font-size: clamp(22px, 3vw, 36px);
   line-height: 1;

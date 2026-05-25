@@ -3,11 +3,18 @@ const button = document.querySelector("#run-button");
 const statusEl = document.querySelector("#status");
 const metricsEl = document.querySelector("#metrics");
 const pathEl = document.querySelector("#path");
+const stopwatchEl = document.querySelector("#stopwatch");
+const watchTimeEl = document.querySelector("#watch-time");
+
+let watchTimer = null;
+let watchStartedAt = 0;
+let lastBrowserElapsed = 0;
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   setLoading(true);
   clearResult();
+  startStopwatch();
 
   const payload = {
     start: document.querySelector("#start").value,
@@ -26,10 +33,14 @@ form.addEventListener("submit", async (event) => {
     if (!response.ok || !data.ok) {
       throw new Error(data.error || "Request failed.");
     }
+    stopStopwatch();
     renderResult(data);
   } catch (error) {
+    stopStopwatch();
     statusEl.textContent = error.message;
     statusEl.className = "status fail";
+    metricsEl.hidden = false;
+    metricsEl.innerHTML = [metric("browser wait", `${formatSeconds(lastBrowserElapsed)}s`)].join("");
   } finally {
     setLoading(false);
   }
@@ -51,7 +62,8 @@ function renderResult(data) {
   const stage = data.auto?.stage || data.settings?.mode || "auto";
   metricsEl.hidden = false;
   metricsEl.innerHTML = [
-    metric("elapsed", `${formatSeconds(data.elapsed)}s`),
+    metric("browser wait", `${formatSeconds(lastBrowserElapsed)}s`),
+    metric("backend solve", `${formatSeconds(data.elapsed)}s`),
     metric("fetches", data.fetches),
     metric("mode", stage),
   ].join("");
@@ -78,6 +90,26 @@ function renderResult(data) {
     )
     .join("");
   renderAttempts(data.auto?.attempts || []);
+}
+
+function startStopwatch() {
+  watchStartedAt = performance.now();
+  lastBrowserElapsed = 0;
+  stopwatchEl.hidden = false;
+  tickStopwatch();
+  clearInterval(watchTimer);
+  watchTimer = setInterval(tickStopwatch, 50);
+}
+
+function stopStopwatch() {
+  tickStopwatch();
+  clearInterval(watchTimer);
+  watchTimer = null;
+}
+
+function tickStopwatch() {
+  lastBrowserElapsed = (performance.now() - watchStartedAt) / 1000;
+  watchTimeEl.textContent = `${formatSeconds(lastBrowserElapsed)}s`;
 }
 
 function renderAttempts(attempts) {
