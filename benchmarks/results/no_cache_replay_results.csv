@@ -1,0 +1,31 @@
+run,type,start,target,success,clicks,fetches,elapsed,path
+1,chosen,Taylor Swift,Quantum mechanics,True,6,8,2.39086129199859,Taylor Swift -> Personal computer -> Micro-Star International -> Transfer technology -> History of technology -> Quantum computers -> Quantum mechanics
+2,chosen,Python (programming language),Artificial intelligence,True,2,4,1.1615835829943535,Python (programming language) -> Machine learning -> Artificial intelligence
+3,chosen,LeBron James,Machine learning,False,,14,3.682765332996496,
+4,chosen,Minecraft,World War II,True,2,14,3.5064192920035566,Minecraft -> BBC News -> World War II
+5,chosen,Sourdough,Semiconductor,False,,15,3.6017492079990916,
+6,chosen,William Shakespeare,Bitcoin,True,3,7,2.0199007080009324,William Shakespeare -> BBC News -> Dark web -> Bitcoin
+7,chosen,New York City,Photosynthesis,False,,14,3.80874274999951,
+8,chosen,The Beatles,Space exploration,False,,14,3.7418241249979474,
+9,chosen,Chess,Climate change,False,,3,3.667623834000551,
+10,chosen,Barack Obama,Large language model,False,,3,3.875643375002255,
+11,chosen,Mona Lisa,Blockchain,False,,3,3.8583354580041487,
+12,chosen,Mount Everest,DNA,True,4,7,2.128477665995888,Mount Everest -> Popular Science -> Popular science -> History of science -> DNA
+13,chosen,Coffee,Nuclear fusion,False,,15,3.7855113330006134,
+14,chosen,Association football,Mars,True,5,8,2.644401541998377,Association football -> Roman Empire -> Roman technology -> History of technology -> Mars Exploration Rover -> Mars
+15,chosen,Nintendo,Philosophy,True,5,11,2.9795784590023686,Nintendo -> Official Nintendo Magazine -> Shooting Gazette -> Sports magazine -> Philosophy of sport -> Philosophy
+16,random,2004 Advance Auto Parts 500,Willem Wauters,False,,15,3.60740812500444,
+17,random,95th Evacuation Hospital,Gamergate,False,,11,3.7210594580028555,
+18,random,"Potoci, Drvar",Toby Ann Stavisky,False,,3,3.698323790995346,
+19,random,Barrios Altos massacre,Libocedrus yateensis,False,,3,3.636064708996855,
+20,random,Bjorn Stevens,Victoria Jubilee Hospital,False,,3,3.6962853750010254,
+21,random,North Koel River,Church of God and Saints of Christ,False,,3,3.636222375003854,
+22,random,Bernhard Molique,Olivio (restaurant),False,,3,3.620548124999914,
+23,random,"Lauraville, Baltimore",Invasion (Nastyboy),False,,3,3.6439460830006283,
+24,random,Canada Land Inventory,Algerian rugby union Championship,False,,3,3.619746667005529,
+25,random,Marzocchi,Fisheries subsidy,False,,3,3.6398424999933923,
+26,random,1992 World Junior Canoe Slalom Championships,"Sir William Meredith, 3rd Baronet",False,,3,3.6266677910025464,
+27,random,2020–21 Women's CEV Cup,Department of Post-War Reconstruction,False,,6,3.6029643330039107,
+28,random,Hart railway station,NGC 3507,False,,12,3.992465166003967,
+29,random,Jayne Kennedy,2013 UCI Mountain Bike & Trials World Championships,False,,16,3.6062099170012516,
+30,random,Bure Nangal,Chu Jong-chol,False,,15,3.668943249998847,

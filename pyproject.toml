@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "super-wikipedia-speedrun"
+version = "0.1.0"
+description = "A fast no-cache Wikipedia speedrun solver with a local web UI."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Arjun Shah" }]
+keywords = ["wikipedia", "pathfinding", "search", "beautifulsoup", "speedrun"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Internet :: WWW/HTTP",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "beautifulsoup4>=4.12",
+  "lxml>=5.0",
+  "requests>=2.32",
+  "rich>=13.7",
+]
+
+[project.urls]
+Homepage = "https://github.com/arjunkshah/super-wikipedia-speedrun"
+Repository = "https://github.com/arjunkshah/super-wikipedia-speedrun.git"
+Issues = "https://github.com/arjunkshah/super-wikipedia-speedrun/issues"
+
+[project.scripts]
+wiki-speedrun = "wikispeedrun.solver:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

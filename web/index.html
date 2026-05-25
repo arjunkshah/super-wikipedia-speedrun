@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wikipedia Speedrun Solver</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="mast">
+        <p class="eyebrow">live wikipedia pathfinder</p>
+        <h1>Speedrun any two articles.</h1>
+      </section>
+
+      <section class="solver" aria-label="Wikipedia solver">
+        <form id="solve-form" class="control-panel">
+          <label>
+            <span>Start article</span>
+            <input
+              id="start"
+              name="start"
+              autocomplete="off"
+              placeholder="https://en.wikipedia.org/wiki/Taylor_Swift"
+              value="Taylor Swift"
+            />
+          </label>
+
+          <label>
+            <span>Target article</span>
+            <input
+              id="target"
+              name="target"
+              autocomplete="off"
+              placeholder="https://en.wikipedia.org/wiki/Quantum_mechanics"
+              value="Quantum mechanics"
+            />
+          </label>
+
+          <details>
+            <summary>Search budget</summary>
+            <div class="budget-grid">
+              <label>
+                <span>Seconds</span>
+                <input id="timeLimit" type="number" value="3.6" min="1" max="12" step="0.1" />
+              </label>
+              <label>
+                <span>Beam</span>
+                <input id="beam" type="number" value="42" min="8" max="90" step="1" />
+              </label>
+              <label>
+                <span>Pages</span>
+                <input id="maxPages" type="number" value="16" min="4" max="80" step="1" />
+              </label>
+              <label>
+                <span>Depth</span>
+                <input id="maxDepth" type="number" value="6" min="2" max="10" step="1" />
+              </label>
+            </div>
+          </details>
+
+          <button id="run-button" type="submit">
+            <span class="button-idle">Run speedrun</span>
+            <span class="button-busy">Solving...</span>
+          </button>
+        </form>
+
+        <aside class="readout" aria-live="polite">
+          <div id="status" class="status">Ready.</div>
+          <div id="metrics" class="metrics" hidden></div>
+          <ol id="path" class="path"></ol>
+        </aside>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
