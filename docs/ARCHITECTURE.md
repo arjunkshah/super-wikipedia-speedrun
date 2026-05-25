@@ -19,6 +19,11 @@ The solver is optimized for latency, not guaranteed shortest paths.
 - `web_app.py`  
   Small stdlib HTTP server. Serves `web/` assets and exposes `POST /api/solve`.
 
+- `netlify/functions/solve.mjs`  
+  Serverless JavaScript solver used by the Netlify deployment. It mirrors the
+  Python backend's no-persistent-cache strategy with live Wikipedia fetches and
+  automatic progressive search.
+
 - `web/`  
   Static browser UI.
 

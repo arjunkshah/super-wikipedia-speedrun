@@ -1,0 +1,13 @@
+{
+  "name": "super-wikipedia-speedrun",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static Netlify UI plus serverless Wikipedia speedrun solver.",
+  "scripts": {
+    "dev": "netlify dev",
+    "deploy": "netlify deploy --prod --dir=web --functions=netlify/functions"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

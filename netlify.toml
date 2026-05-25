@@ -1,0 +1,8 @@
+[build]
+  publish = "web"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/solve"
+  to = "/.netlify/functions/solve"
+  status = 200

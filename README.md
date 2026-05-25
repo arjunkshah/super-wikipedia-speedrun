@@ -70,6 +70,22 @@ Paste two article titles or Wikipedia URLs and run the solver from the browser.
 The backend automatically starts with a fast pass and escalates only when it
 needs a deeper search.
 
+## Netlify Deploy
+
+The Netlify build publishes `web/` and serves the solver through a serverless
+function at `/api/solve`.
+
+```bash
+npm run deploy
+```
+
+Config:
+
+```text
+netlify.toml
+netlify/functions/solve.mjs
+```
+
 ## How It Works
 
 The solver is designed for speed, not shortest-path proof.
