@@ -457,10 +457,8 @@ class WikiClient:
 
 
 AUTO_STAGES: tuple[dict[str, float | int | str], ...] = (
-    {"name": "scout", "time_limit": 1.2, "beam": 42, "max_pages": 12, "max_depth": 6},
-    {"name": "wide", "time_limit": 5.0, "beam": 72, "max_pages": 72, "max_depth": 8},
-    {"name": "deep", "time_limit": 8.0, "beam": 90, "max_pages": 100, "max_depth": 8},
-    {"name": "max", "time_limit": 16.0, "beam": 120, "max_pages": 220, "max_depth": 9},
+    {"name": "race", "time_limit": 8.0, "beam": 120, "max_pages": 220, "max_depth": 10},
+    {"name": "max", "time_limit": 16.0, "beam": 160, "max_pages": 320, "max_depth": 10},
 )
 
 
@@ -552,6 +550,14 @@ REGION_HUB_RE = re.compile(
 SCIENCE_HUB_RE = re.compile(
     r"\b(science|physics|chemistry|mathematics|engineering|technology|computer|"
     r"quantum|biology|medicine|economics)\b",
+    re.I,
+)
+AWARD_HUB_RE = re.compile(
+    r"\b(award|awards|music|film|television|academy|festival|prize|ceremony)\b",
+    re.I,
+)
+MUSIC_HUB_RE = re.compile(
+    r"\b(music|song|album|record|singer|band|artist|award|festival)\b",
     re.I,
 )
 
@@ -648,6 +654,10 @@ def structural_hub_bonus(title: str, target_tokens: set[str]) -> float:
         bonus += 0.55 if history_target else (0.5 if science_target else 0.45)
     if SCIENCE_HUB_RE.search(title):
         bonus += 0.75 if science_target else 0.4
+    if target_tokens & {"award", "awards"} and AWARD_HUB_RE.search(title):
+        bonus += 1.25
+    if target_tokens & {"music", "song", "album"} and MUSIC_HUB_RE.search(title):
+        bonus += 1.0
     return bonus
 
 

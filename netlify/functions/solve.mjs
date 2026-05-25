@@ -63,10 +63,8 @@ const STOPWORDS = new Set([
 ]);
 
 const AUTO_STAGES = [
-  { name: "scout", timeLimit: 1.2, beam: 42, maxPages: 12, maxDepth: 6 },
-  { name: "wide", timeLimit: 5.0, beam: 72, maxPages: 72, maxDepth: 8 },
-  { name: "deep", timeLimit: 8.0, beam: 90, maxPages: 100, maxDepth: 8 },
-  { name: "max", timeLimit: 16.0, beam: 120, maxPages: 220, maxDepth: 9 },
+  { name: "race", timeLimit: 8.0, beam: 120, maxPages: 220, maxDepth: 10 },
+  { name: "max", timeLimit: 16.0, beam: 160, maxPages: 320, maxDepth: 10 },
 ];
 
 class RaceClient {
@@ -421,6 +419,12 @@ function structuralHubBonus(title, targetTokens) {
   if (/\b(the times|the guardian|the economist|bbc news|magazine|gazette|journal)\b/i.test(lower)) score += 0.55;
   if (/\b(united states|united kingdom|france|germany|china|india|europe|africa|asia|world war|international|national|republic|empire)\b/i.test(lower)) score += 0.55;
   if (/\b(science|physics|chemistry|mathematics|engineering|technology|computer|quantum|biology|medicine|economics|cricket)\b/i.test(lower)) score += 0.65;
+  if (targetTokens.has("award") || targetTokens.has("awards")) {
+    if (/\b(award|awards|music|film|television|academy|festival|prize|ceremony)\b/i.test(lower)) score += 1.25;
+  }
+  if (targetTokens.has("music") || targetTokens.has("song") || targetTokens.has("album")) {
+    if (/\b(music|song|album|record|singer|band|artist|award|festival)\b/i.test(lower)) score += 1.0;
+  }
   if (targetTokens.has("cricketer") || targetTokens.has("cricket") || targetTokens.has("indian")) {
     if (/\b(india|cricket|sports?)\b/i.test(lower)) score += 1.5;
   }

@@ -67,7 +67,7 @@ class SpeedrunHandler(BaseHTTPRequestHandler):
             )
             return
 
-        client = WikiClient(min_interval=0.04)
+        client = WikiClient(min_interval=0.0)
         client.clear_session()
         started = time.perf_counter()
         result, auto = solve_auto(
