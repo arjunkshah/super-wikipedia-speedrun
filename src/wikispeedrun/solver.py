@@ -8,6 +8,7 @@ import math
 import re
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Iterable
 from urllib.parse import quote, unquote, urlparse
@@ -24,6 +25,18 @@ BASE_URL = "https://en.wikipedia.org"
 API_URL = f"{BASE_URL}/w/api.php"
 VECTOR_DIMS = 4096
 TOKEN_RE = re.compile(r"[a-z0-9][a-z0-9\-']+", re.I)
+HEADING_RE = re.compile(
+    r"<h1[^>]*id=[\"']firstHeading[\"'][^>]*>(.*?)</h1>",
+    re.I | re.S,
+)
+CONTENT_RE = re.compile(
+    r"<div[^>]+id=[\"']mw-content-text[\"'][^>]*>(.*?)(?:<noscript|</main>|</body>)",
+    re.I | re.S,
+)
+LINK_RE = re.compile(
+    r"<a\b[^>]*href=[\"']/wiki/([^\"'#:]+(?:\([^\"'#]*\))?[^\"'#]*)[\"'][^>]*>(.*?)</a>",
+    re.I | re.S,
+)
 NAMESPACE_RE = re.compile(
     r"^(Special|Help|Talk|User|User_talk|Wikipedia|Wikipedia_talk|File|File_talk|"
     r"MediaWiki|Template|Template_talk|Category|Category_talk|Portal|Draft|TimedText):",
@@ -209,6 +222,31 @@ def is_article_href(href: str) -> bool:
 
 
 def parse_page_html(url: str, html: str, *, lite: bool = False) -> Page:
+    if lite:
+        heading_match = HEADING_RE.search(html)
+        title = (
+            strip_tags(heading_match.group(1))
+            if heading_match
+            else clean_title_from_url(url)
+        )
+        content_match = CONTENT_RE.search(html)
+        content = content_match.group(1) if content_match else html
+        seen: set[str] = set()
+        links: list[Link] = []
+        for match in LINK_RE.finditer(content):
+            raw_title = unquote(match.group(1)).replace("_", " ")
+            if not is_valid_article_title(raw_title) or raw_title == "Main Page":
+                continue
+            absolute = title_to_url(raw_title)
+            if absolute in seen:
+                continue
+            label = strip_tags(match.group(2))
+            if not label:
+                continue
+            seen.add(absolute)
+            links.append(Link(title=raw_title, anchor=label, url=absolute))
+        return Page(title=title, url=canonical_url(url), text=title, links=links)
+
     soup = BeautifulSoup(html, "lxml")
     heading = soup.select_one("#firstHeading")
     title = heading.get_text(" ", strip=True) if heading else clean_title_from_url(url)
@@ -246,6 +284,10 @@ def parse_page_html(url: str, html: str, *, lite: bool = False) -> Page:
         links.append(Link(title=clean_title_from_url(absolute), anchor=label, url=absolute))
 
     return Page(title=title, url=canonical_url(url), text="\n".join(text_parts), links=links)
+
+
+def strip_tags(value: str) -> str:
+    return re.sub(r"\s+", " ", unescape(re.sub(r"<[^>]+>", " ", value)).replace("\xa0", " ")).strip()
 
 
 def is_valid_article_title(title: str) -> bool:
@@ -985,40 +1027,52 @@ def solve(
     if found is not None:
         return found
 
-    while queue and expanded < max_pages:
-        if time.perf_counter() >= deadline:
-            break
-        _, depth, _, page_url, page_title, path, urls = heapq.heappop(queue)
-        if depth >= max_depth:
-            continue
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        while queue and expanded < max_pages:
+            if time.perf_counter() >= deadline:
+                break
 
-        if time.perf_counter() >= deadline:
-            break
-
-        page = known_pages.get(page_url)
-        if page is None:
-            try:
-                page = client.fetch(page_url, full=False)
-                known_pages[page_url] = page
-            except (TimeoutError, Exception) as exc:
-                if isinstance(exc, TimeoutError):
-                    break
-                console.print(f"[dim]skip {page_title}: {exc}[/dim]")
+            batch: list[tuple[float, int, int, str, str, list[str], list[str]]] = []
+            while queue and len(batch) < 10 and expanded + len(batch) < max_pages:
+                item = heapq.heappop(queue)
+                if item[1] < max_depth:
+                    batch.append(item)
+            if not batch:
                 continue
 
-        if time.perf_counter() >= deadline:
-            break
-        expanded += 1
+            futures = []
+            for item in batch:
+                _, depth, _, page_url, page_title, path, urls = item
+                page = known_pages.get(page_url)
+                if page is not None:
+                    futures.append((item, None, page))
+                else:
+                    futures.append((item, executor.submit(client.fetch, page_url, full=False), None))
 
-        found = enqueue_links(page, depth, path, urls)
-        if found is not None:
-            return found
+            for item, future, cached_page in futures:
+                _, depth, _, page_url, page_title, path, urls = item
+                try:
+                    page = cached_page if cached_page is not None else future.result()
+                    known_pages[page_url] = page
+                except (TimeoutError, Exception) as exc:
+                    if isinstance(exc, TimeoutError):
+                        break
+                    console.print(f"[dim]skip {page_title}: {exc}[/dim]")
+                    continue
 
-        if expanded % 12 == 0:
-            console.print(
-                f"[dim]expanded={expanded} queued={len(queue)} "
-                f"network={client.network_fetches} depth={depth}[/dim]"
-            )
+                if time.perf_counter() >= deadline:
+                    break
+                expanded += 1
+
+                found = enqueue_links(page, depth, path, urls)
+                if found is not None:
+                    return found
+
+                if expanded % 12 == 0:
+                    console.print(
+                        f"[dim]expanded={expanded} queued={len(queue)} "
+                        f"network={client.network_fetches} depth={depth}[/dim]"
+                    )
 
     client.deadline = None
     return None

@@ -281,14 +281,31 @@ async function solveStage(client, start, target, stage) {
   while (queue.length && expanded < stage.maxPages) {
     client.checkTime();
     queue.sort((a, b) => a.priority - b.priority || a.counter - b.counter);
-    const item = queue.shift();
-    if (item.depth >= stage.maxDepth) continue;
-    const page = await client.fetchPage(item.link.url);
-    expanded += 1;
-    if (aliases.has(normalizeTitle(page.title))) return result([...item.path, page], targetPage);
-    const direct = page.links.find((link) => aliases.has(normalizeTitle(link.title)));
-    if (direct) return result([...item.path, page, linkToPage(direct)], targetPage);
-    enqueue(page, item.depth, [...item.path, page], startTokens);
+    const batch = [];
+    while (queue.length && batch.length < 10 && expanded + batch.length < stage.maxPages) {
+      const item = queue.shift();
+      if (item.depth < stage.maxDepth) batch.push(item);
+    }
+    if (!batch.length) continue;
+
+    const fetched = await Promise.all(
+      batch.map((item) =>
+        client
+          .fetchPage(item.link.url)
+          .then((page) => ({ item, page }))
+          .catch(() => null),
+      ),
+    );
+
+    for (const entry of fetched) {
+      if (!entry) continue;
+      const { item, page } = entry;
+      expanded += 1;
+      if (aliases.has(normalizeTitle(page.title))) return result([...item.path, page], targetPage);
+      const direct = page.links.find((link) => aliases.has(normalizeTitle(link.title)));
+      if (direct) return result([...item.path, page, linkToPage(direct)], targetPage);
+      enqueue(page, item.depth, [...item.path, page], startTokens);
+    }
   }
 
   return null;
