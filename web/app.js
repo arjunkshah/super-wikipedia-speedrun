@@ -12,13 +12,9 @@ form.addEventListener("submit", async (event) => {
   const payload = {
     start: document.querySelector("#start").value,
     target: document.querySelector("#target").value,
-    timeLimit: Number(document.querySelector("#timeLimit").value),
-    beam: Number(document.querySelector("#beam").value),
-    maxPages: Number(document.querySelector("#maxPages").value),
-    maxDepth: Number(document.querySelector("#maxDepth").value),
   };
 
-  statusEl.textContent = "Searching live Wikipedia...";
+  statusEl.textContent = "Finding the fastest route...";
 
   try {
     const response = await fetch("/api/solve", {
@@ -56,12 +52,13 @@ function renderResult(data) {
   metricsEl.innerHTML = [
     metric("elapsed", `${formatSeconds(data.elapsed)}s`),
     metric("fetches", data.fetches),
-    metric("limit", `${data.settings.timeLimit}s`),
+    metric("mode", data.auto?.stage || "auto"),
   ].join("");
 
   if (!data.found) {
-    statusEl.textContent = "No path found inside the budget.";
+    statusEl.textContent = "No path found after a deep search.";
     statusEl.className = "status fail";
+    renderAttempts(data.auto?.attempts || []);
     return;
   }
 
@@ -79,6 +76,15 @@ function renderResult(data) {
       `
     )
     .join("");
+  renderAttempts(data.auto?.attempts || []);
+}
+
+function renderAttempts(attempts) {
+  if (!attempts.length) return;
+  const attemptText = attempts
+    .map((attempt) => `${attempt.name}: ${formatSeconds(attempt.elapsed)}s`)
+    .join("  /  ");
+  metricsEl.insertAdjacentHTML("beforeend", metric("passes", attemptText));
 }
 
 function metric(label, value) {

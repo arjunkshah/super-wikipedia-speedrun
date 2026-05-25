@@ -114,27 +114,6 @@ input:focus {
   box-shadow: 5px 5px 0 var(--amber);
 }
 
-details {
-  border-block: 1px solid var(--line);
-  padding: 14px 0;
-  margin-bottom: 18px;
-}
-
-summary {
-  cursor: pointer;
-}
-
-.budget-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding-top: 14px;
-}
-
-.budget-grid label {
-  margin: 0;
-}
-
 button {
   width: 100%;
   border: 2px solid var(--ink);

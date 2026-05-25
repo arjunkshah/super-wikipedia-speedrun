@@ -66,8 +66,9 @@ Open:
 http://127.0.0.1:8787
 ```
 
-Paste two article titles or Wikipedia URLs, tune the search budget, and run the
-solver from the browser.
+Paste two article titles or Wikipedia URLs and run the solver from the browser.
+The backend automatically starts with a fast pass and escalates only when it
+needs a deeper search.
 
 ## How It Works
 
@@ -81,7 +82,7 @@ For each race it:
 4. Scores outgoing links using token overlap, hashed cosine similarity, hub-page
    shape, domain patterns, bridge hits, and trap penalties.
 5. Expands the best links first with a priority queue.
-6. Stops at the deadline instead of crawling forever.
+6. In the web UI, runs progressive fast/wide/deep/max passes automatically.
 
 Benchmarks clear in-memory session state between races. There is no persistent
 page cache in the active solver.
@@ -133,8 +134,9 @@ python replay_benchmark.py
 
 ## Notes
 
-Random obscure article pairs are hard under a 3.6 second no-cache budget. The
-solver is meant to be fast and general, not guaranteed complete.
+Random obscure article pairs can still be hard because Wikipedia is huge and
+live requests can rate-limit or fail. The web backend now hides search knobs and
+escalates automatically so normal users do not need to understand budgets.
 
 ## License
 

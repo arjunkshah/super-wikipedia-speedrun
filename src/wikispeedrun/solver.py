@@ -272,6 +272,8 @@ class WikiClient:
         )
         self.network_fetches = 0
         self._session_pages: dict[str, Page] = {}
+        self._summary_cache: dict[str, tuple[str, str]] = {}
+        self._bridge_cache: dict[str, set[str]] = {}
 
     def resolve_url(self, article: str) -> str:
         article = article.strip()
@@ -282,6 +284,8 @@ class WikiClient:
 
     def clear_session(self) -> None:
         self._session_pages.clear()
+        self._summary_cache.clear()
+        self._bridge_cache.clear()
 
     def fetch(self, article_or_url: str, *, full: bool = True) -> Page:
         url = self.resolve_url(article_or_url)
@@ -359,16 +363,24 @@ class WikiClient:
         return payload
 
     def fetch_summary(self, title: str) -> tuple[str, str]:
+        cached = self._summary_cache.get(normalize_title(title))
+        if cached is not None:
+            return cached
         slug = quote(title.replace(" ", "_"), safe="()_%")
         self.network_fetches += 1
         response = self._get(f"{BASE_URL}/api/rest_v1/page/summary/{slug}")
         if response.status_code == 404:
-            return title, title
+            result = (title, title)
+            self._summary_cache[normalize_title(title)] = result
+            return result
         response.raise_for_status()
         payload = response.json()
         resolved = payload.get("title", title)
         extract = payload.get("extract", payload.get("description", resolved))
-        return resolved, extract
+        result = (resolved, extract)
+        self._summary_cache[normalize_title(title)] = result
+        self._summary_cache[normalize_title(resolved)] = result
+        return result
 
     def fetch_race_pages(self, start: str, target: str) -> tuple[Page, Page]:
         start_page = self.fetch(start, full=False)
@@ -392,6 +404,11 @@ class WikiClient:
         return parse_page_html(final_url, response.text, lite=lite)
 
     def discover_bridges(self, target_page: Page, *, limit: int = 18) -> set[str]:
+        cache_key = f"{normalize_title(target_page.title)}|{limit}"
+        cached = self._bridge_cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         queries = [
             keyword_query(f"{target_page.title}\n{target_page.text}", max_terms=8),
             target_page.title,
@@ -435,7 +452,68 @@ class WikiClient:
                     bridges.add(normalize_title(title))
             if len(bridges) >= limit:
                 break
+        self._bridge_cache[cache_key] = bridges
         return bridges
+
+
+AUTO_STAGES: tuple[dict[str, float | int | str], ...] = (
+    {"name": "fast", "time_limit": 3.6, "beam": 42, "max_pages": 16, "max_depth": 6},
+    {"name": "wide", "time_limit": 8.0, "beam": 64, "max_pages": 48, "max_depth": 7},
+    {"name": "deep", "time_limit": 16.0, "beam": 90, "max_pages": 140, "max_depth": 8},
+    {"name": "max", "time_limit": 32.0, "beam": 120, "max_pages": 360, "max_depth": 9},
+)
+
+
+def solve_auto(
+    client: WikiClient,
+    start: str,
+    target: str,
+    *,
+    console: Console,
+    stages: tuple[dict[str, float | int | str], ...] = AUTO_STAGES,
+) -> tuple[SearchResult | None, dict[str, object]]:
+    """Try increasingly broad generic searches, stopping at the first path."""
+    started = time.perf_counter()
+    attempts: list[dict[str, object]] = []
+
+    for stage in stages:
+        before_fetches = client.network_fetches
+        stage_started = time.perf_counter()
+        result = solve(
+            client,
+            start,
+            target,
+            beam=int(stage["beam"]),
+            max_pages=int(stage["max_pages"]),
+            max_depth=int(stage["max_depth"]),
+            time_limit=float(stage["time_limit"]),
+            console=console,
+        )
+        attempt = {
+            "name": stage["name"],
+            "elapsed": time.perf_counter() - stage_started,
+            "fetches": client.network_fetches - before_fetches,
+            "found": result is not None,
+            "beam": stage["beam"],
+            "maxPages": stage["max_pages"],
+            "maxDepth": stage["max_depth"],
+            "timeLimit": stage["time_limit"],
+        }
+        attempts.append(attempt)
+        if result is not None:
+            return result, {
+                "mode": "auto",
+                "stage": stage["name"],
+                "attempts": attempts,
+                "elapsed": time.perf_counter() - started,
+            }
+
+    return None, {
+        "mode": "auto",
+        "stage": None,
+        "attempts": attempts,
+        "elapsed": time.perf_counter() - started,
+    }
 
 
 MEDIA_HUB_RE = re.compile(

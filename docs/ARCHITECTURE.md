@@ -50,8 +50,9 @@ The search is a greedy priority search with a beam. Links are scored using:
 - media, region, science, and history patterns
 - penalties for narrow traps like songs, games, and parenthetical pages
 
-The default deadline is `3.6s`. Races that do not find a path inside the budget
-fail quickly instead of crawling the graph indefinitely.
+The single-pass CLI default deadline is `3.6s`. The web backend uses
+`solve_auto()`, which runs progressive fast/wide/deep/max passes and stops as
+soon as it finds a path.
 
 ## Tradeoff
 

@@ -17,7 +17,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from wikispeedrun import WikiClient, solve
+from wikispeedrun import WikiClient, solve_auto
 
 STATIC_DIR = ROOT / "web"
 
@@ -53,10 +53,6 @@ class SpeedrunHandler(BaseHTTPRequestHandler):
             payload = json.loads(body or "{}")
             start = str(payload.get("start", "")).strip()
             target = str(payload.get("target", "")).strip()
-            time_limit = clamp_float(payload.get("timeLimit", 3.6), 1.0, 12.0)
-            beam = clamp_int(payload.get("beam", 42), 8, 90)
-            max_pages = clamp_int(payload.get("maxPages", 16), 4, 80)
-            max_depth = clamp_int(payload.get("maxDepth", 6), 2, 10)
         except (ValueError, json.JSONDecodeError) as exc:
             self.send_json({"ok": False, "error": f"Bad request: {exc}"}, HTTPStatus.BAD_REQUEST)
             return
@@ -71,14 +67,10 @@ class SpeedrunHandler(BaseHTTPRequestHandler):
         client = WikiClient()
         client.clear_session()
         started = time.perf_counter()
-        result = solve(
+        result, auto = solve_auto(
             client,
             start,
             target,
-            beam=beam,
-            max_pages=max_pages,
-            max_depth=max_depth,
-            time_limit=time_limit,
             console=NullConsole(),
         )
         elapsed = time.perf_counter() - started
@@ -90,12 +82,7 @@ class SpeedrunHandler(BaseHTTPRequestHandler):
                     "found": False,
                     "elapsed": elapsed,
                     "fetches": client.network_fetches,
-                    "settings": {
-                        "beam": beam,
-                        "maxPages": max_pages,
-                        "maxDepth": max_depth,
-                        "timeLimit": time_limit,
-                    },
+                    "auto": auto,
                 }
             )
             return
@@ -112,12 +99,7 @@ class SpeedrunHandler(BaseHTTPRequestHandler):
                 "elapsed": result.elapsed,
                 "wallElapsed": elapsed,
                 "fetches": client.network_fetches,
-                "settings": {
-                    "beam": beam,
-                    "maxPages": max_pages,
-                    "maxDepth": max_depth,
-                    "timeLimit": time_limit,
-                },
+                "auto": auto,
             }
         )
 
@@ -144,14 +126,6 @@ class SpeedrunHandler(BaseHTTPRequestHandler):
 
     def log_message(self, format: str, *args: Any) -> None:
         Console(stderr=True).print(f"[dim]{self.address_string()} - {format % args}[/dim]")
-
-
-def clamp_float(value: Any, low: float, high: float) -> float:
-    return max(low, min(high, float(value)))
-
-
-def clamp_int(value: Any, low: int, high: int) -> int:
-    return max(low, min(high, int(value)))
 
 
 def main() -> int:
