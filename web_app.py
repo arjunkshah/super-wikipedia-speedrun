@@ -67,7 +67,7 @@ class SpeedrunHandler(BaseHTTPRequestHandler):
             )
             return
 
-        client = WikiClient()
+        client = WikiClient(min_interval=0.04)
         client.clear_session()
         started = time.perf_counter()
         result, auto = solve_auto(
@@ -99,7 +99,7 @@ class SpeedrunHandler(BaseHTTPRequestHandler):
                     for title, url in zip(result.path, result.urls, strict=False)
                 ],
                 "clicks": len(result.path) - 1,
-                "elapsed": result.elapsed,
+                "elapsed": elapsed,
                 "wallElapsed": elapsed,
                 "fetches": client.network_fetches,
                 "auto": auto,
